@@ -1,4 +1,5 @@
 import argparse
+import glob
 import os
 
 
@@ -61,8 +62,10 @@ class Parser:
             help="Convert one or more JPEG images into a PDF",
         )
         # Create a mutually exclusive group for --files and --path
-        self.exgroup_jpg2pdf = self.parser_jpg2pdf.add_mutually_exclusive_group(required=True)
-        
+        self.exgroup_jpg2pdf = self.parser_jpg2pdf.add_mutually_exclusive_group(
+            required=True
+        )
+
         # Argument for input JPEG file(s)
         self.exgroup_jpg2pdf.add_argument(
             "-f",
@@ -89,21 +92,32 @@ class Parser:
             type=str,
             default=os.getcwd(),
         )
-        
+
         # Add parser for the mergePDFs functionality
         self.parser_mergePDFs = self.subparsers.add_parser(
             name="mergePDFs",
             help="Merge multiple PDF files into a single PDF",
         )
+        # Create a mutually exclusive group for --files and --path
+        self.exgroup_mergePDFs = self.parser_mergePDFs.add_mutually_exclusive_group(
+            required=True
+        )
         # Argument for specifying the input PDF files to be merged
-        self.parser_mergePDFs.add_argument(
+        self.exgroup_mergePDFs.add_argument(
             "-f",
             "--files",
             metavar="filename",
             help="List of PDF files to be merged into a single PDF (required)",
             nargs="+",  # Allows multiple files to be passed as a list
             type=str,
-            required=True,
+        )
+        # Argument for input JPEG files path
+        self.exgroup_mergePDFs.add_argument(
+            "-p",
+            "--path",
+            metavar="directory",
+            help="The path of the JPEG files to be converted to a single PDF",
+            type=str,
         )
         # Argument for specifying the output directory where the merged PDF will be saved
         self.parser_mergePDFs.add_argument(
@@ -114,7 +128,7 @@ class Parser:
             type=str,
             default=os.getcwd(),  # Default to the current working directory if not provided
         )
-        
+
         # Parser for compressPDF conversion
         self.parser_compressPDF = self.subparsers.add_parser(
             name="compressPDF",
@@ -139,7 +153,6 @@ class Parser:
             default=os.getcwd(),
         )
 
-
     def parse(self) -> None:
         # Parse the command-line arguments provided by the user
         self.args = self.parser.parse_args()
@@ -149,7 +162,9 @@ class Parser:
     def checker(self) -> None:
         # Validation and setup for pdf2jpg conversion
         if self.args.converter == "pdf2jpg":
-            if not os.path.isfile(self.args.file) or not self.args.file.endswith(".pdf"):
+            if not os.path.isfile(self.args.file) or not self.args.file.endswith(
+                ".pdf"
+            ):
                 raise FileNotFoundError(f"{self.args.file} is not found")
             else:
                 self.file = self.args.file
@@ -163,27 +178,40 @@ class Parser:
                 for file in self.args.files:
                     if not os.path.isfile(file) or not file.endswith(".jpg"):
                         raise FileNotFoundError(f"{file} is not found")
-            elif self.args.path:
-                ...
-            else:
-                raise AttributeError("Please specify either the list of JPEGs or the path contains them")
+                self.files = self.args.files
 
-            self.files = self.args.files
-            self.type = "jpg2pdf"
+            elif self.args.path:
+                self.args.path = self.args.path.replace('/','\\')
+                self.files = glob.glob(f"{self.args.path}\\*.jpg")
             
+            else:
+                raise AttributeError(
+                    "Please specify either the list of JPEGs or the path contains them"
+                )
+
+            self.type = "jpg2pdf"
+
         # Validation and setup for mergePDFs conversion
         elif self.args.converter == "mergePDFs":
-            for file in self.args.files:
-                if not os.path.isfile(file) or not file.endswith(".pdf"):
-                    raise FileNotFoundError(f"{file} is not found")
-
-            self.files = self.args.files
-            self.type = "mergePDFs"
             
+            if self.args.files:
+                for file in self.args.files:
+                    if not os.path.isfile(file) or not file.endswith(".pdf"):
+                        raise FileNotFoundError(f"{file} is not found")
+                self.files = self.args.files
+                    
+            elif self.args.path:
+                self.args.path = self.args.path.replace('/','\\')
+                self.files = glob.glob(f"{self.args.path}\\*.pdf")
+
+            self.type = "mergePDFs"
+
         # Validation and setup for compressPDF conversion
         elif self.args.converter == "compressPDF":
-            
-            if not os.path.isfile(self.args.file) or not self.args.file.endswith(".pdf"):
+
+            if not os.path.isfile(self.args.file) or not self.args.file.endswith(
+                ".pdf"
+            ):
                 raise FileNotFoundError(f"{self.args.file} is not found")
 
             self.file = self.args.file

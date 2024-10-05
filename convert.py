@@ -1,6 +1,5 @@
 import os
 import re
-import glob
 import PyPDF2
 from pdf2image import convert_from_path
 from fpdf import FPDF
@@ -52,8 +51,11 @@ def jpg_to_pdf(images: list, output_dir: str) -> None:
 
     # Extract the base name for the output PDF from the first image filename
     pattern = r"\b(?P<name>\w*)\.(jpg|jpeg)$"
-    match = re.match(pattern, images[0])
-    filename = f"{match.group('name')}.pdf"
+    match = re.search(pattern, images[0])
+    if match:
+        filename = f"converted-{match.group('name')}.pdf"
+    else:
+        filename = "converted-.pdf"
 
     pdf = FPDF()
 
