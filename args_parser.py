@@ -183,6 +183,9 @@ class Parser:
             elif self.args.path:
                 self.args.path = self.args.path.replace('/','\\')
                 self.files = glob.glob(f"{self.args.path}\\*.jpg")
+                print(self.files)
+                if self.files == []:
+                    raise FileNotFoundError("No JPEGs in the given directory")
             
             else:
                 raise AttributeError(
@@ -203,6 +206,8 @@ class Parser:
             elif self.args.path:
                 self.args.path = self.args.path.replace('/','\\')
                 self.files = glob.glob(f"{self.args.path}\\*.pdf")
+                if self.files == []:
+                    raise FileNotFoundError("No PDFs in the given directory")
 
             self.type = "mergePDFs"
 
