@@ -60,15 +60,25 @@ class Parser:
             name="jpg2pdf",
             help="Convert one or more JPEG images into a PDF",
         )
+        # Create a mutually exclusive group for --files and --path
+        self.exgroup_jpg2pdf = self.parser_jpg2pdf.add_mutually_exclusive_group(required=True)
+        
         # Argument for input JPEG file(s)
-        self.parser_jpg2pdf.add_argument(
+        self.exgroup_jpg2pdf.add_argument(
             "-f",
             "--files",
             metavar="filename",
-            help="The name of the JPEG file or a list of JPEG files to be converted to a single PDF (required)",
+            help="The name of the JPEG file or a list of JPEG files to be converted to a single PDF",
             nargs="+",
             type=str,
-            required=True,
+        )
+        # Argument for input JPEG files path
+        self.exgroup_jpg2pdf.add_argument(
+            "-p",
+            "--path",
+            metavar="directory",
+            help="The path of the JPEG files to be converted to a single PDF",
+            type=str,
         )
         # Argument for output directory (optional, default: current directory)
         self.parser_jpg2pdf.add_argument(
@@ -149,9 +159,14 @@ class Parser:
 
         # Validation and setup for jpg2pdf conversion
         elif self.args.converter == "jpg2pdf":
-            for file in self.args.files:
-                if not os.path.isfile(file) or not file.endswith(".jpg"):
-                    raise FileNotFoundError(f"{file} is not found")
+            if self.args.files:
+                for file in self.args.files:
+                    if not os.path.isfile(file) or not file.endswith(".jpg"):
+                        raise FileNotFoundError(f"{file} is not found")
+            elif self.args.path:
+                ...
+            else:
+                raise AttributeError("Please specify either the list of JPEGs or the path contains them")
 
             self.files = self.args.files
             self.type = "jpg2pdf"
