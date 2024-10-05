@@ -39,6 +39,9 @@ def main() -> None:
                 pdf=parser.file,
                 output_dir=parser.output,
             )
+            
+        case _:
+            raise AttributeError
 
 
 # Entry point for the script
