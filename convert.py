@@ -50,7 +50,7 @@ def jpg_to_pdf(images: list, output_dir: str) -> None:
     """
 
     # Extract the base name for the output PDF from the first image filename
-    pattern = r"\b(?P<name>\w*)\.(jpg|jpeg)$"
+    pattern = r"\b(?P<name>[\w\-\s\(\)]+)\.(jpg|jpeg)$"
     match = re.search(pattern, images[0])
     if match:
         filename = f"converted-{match.group('name')}.pdf"
