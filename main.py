@@ -6,6 +6,7 @@ from convert import *
     pip install fpdf2
     pip install --upgrade Pillow
     pip install PyPDF2
+    pip install tqdm
 """
 
 
@@ -39,7 +40,7 @@ def main() -> None:
                 pdf=parser.file,
                 output_dir=parser.output,
             )
-            
+
         case _:
             raise AttributeError
 

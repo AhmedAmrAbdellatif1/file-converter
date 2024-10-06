@@ -1,6 +1,7 @@
 import argparse
 import glob
 import os
+import sys
 
 
 class Parser:
@@ -162,68 +163,85 @@ class Parser:
     def checker(self) -> None:
         # Validation and setup for pdf2jpg conversion
         if self.args.converter == "pdf2jpg":
-            if not os.path.isfile(self.args.file) or not self.args.file.endswith(
-                ".pdf"
-            ):
-                raise FileNotFoundError(f"{self.args.file} is not found")
-            else:
-                self.file = self.args.file
-                self.type = "pdf2jpg"
-                self.initial = self.args.initial
-                self.last = self.args.last
+            try:
+                if not os.path.isfile(self.args.file) or not self.args.file.endswith(
+                    ".pdf"
+                ):
+                    raise FileNotFoundError
+                else:
+                    self.file = self.args.file
+                    self.type = "pdf2jpg"
+                    self.initial = self.args.initial
+                    self.last = self.args.last
+            except FileNotFoundError:
+                sys.exit(
+                    f"\n⚠️  FileNotFoundError Exception:  {self.args.file} is not found"
+                )
 
         # Validation and setup for jpg2pdf conversion
         elif self.args.converter == "jpg2pdf":
+
             if self.args.files:
-                for file in self.args.files:
-                    if not os.path.isfile(file) or not file.endswith(".jpg"):
-                        raise FileNotFoundError(f"{file} is not found")
-                self.files = self.args.files
+                try:
+                    for file in self.args.files:
+                        if not os.path.isfile(file) or not file.endswith(".jpg"):
+                            raise FileNotFoundError
+                    self.files = self.args.files
+                except FileNotFoundError:
+                    sys.exit(f"\n⚠️  FileNotFoundError Exception:  {file} is not found")
 
             elif self.args.path:
-                self.args.path = self.args.path.replace('/','\\')
+                self.args.path = self.args.path.replace("/", "\\")
                 self.files = glob.glob(f"{self.args.path}\\*.jpg")
-                print(self.files)
-                if self.files == []:
-                    raise FileNotFoundError("No JPEGs in the given directory")
-            
-            else:
-                raise AttributeError(
-                    "Please specify either the list of JPEGs or the path contains them"
-                )
+                try:
+                    if self.files == []:
+                        raise FileNotFoundError
+                except FileNotFoundError:
+                    sys.exit(
+                        "\n⚠️  FileNotFoundError Exception:  No JPEGs in the given directory"
+                    )
 
             self.type = "jpg2pdf"
 
         # Validation and setup for mergePDFs conversion
         elif self.args.converter == "mergePDFs":
-            
+
             if self.args.files:
-                for file in self.args.files:
-                    if not os.path.isfile(file) or not file.endswith(".pdf"):
-                        raise FileNotFoundError(f"{file} is not found")
-                self.files = self.args.files
-                    
+                try:
+                    for file in self.args.files:
+                        if not os.path.isfile(file) or not file.endswith(".pdf"):
+                            raise FileNotFoundError
+                    self.files = self.args.files
+                except FileNotFoundError:
+                    sys.exit(f"\n⚠️  FileNotFoundError Exception:  {file} is not found")
+
             elif self.args.path:
-                self.args.path = self.args.path.replace('/','\\')
+                self.args.path = self.args.path.replace("/", "\\")
                 self.files = glob.glob(f"{self.args.path}\\*.pdf")
-                if self.files == []:
-                    raise FileNotFoundError("No PDFs in the given directory")
+                try:
+                    if self.files == []:
+                        raise FileNotFoundError
+                except FileNotFoundError:
+                    sys.exit(
+                        "\n⚠️  FileNotFoundError Exception:  No PDFs in the given directory"
+                    )
 
             self.type = "mergePDFs"
 
         # Validation and setup for compressPDF conversion
         elif self.args.converter == "compressPDF":
+            try:
+                if not os.path.isfile(self.args.file) or not self.args.file.endswith(
+                    ".pdf"
+                ):
+                    raise FileNotFoundError
+                self.file = self.args.file
+                self.type = "compressPDF"
 
-            if not os.path.isfile(self.args.file) or not self.args.file.endswith(
-                ".pdf"
-            ):
-                raise FileNotFoundError(f"{self.args.file} is not found")
-
-            self.file = self.args.file
-            self.type = "compressPDF"
-
-        else:
-            raise AttributeError
+            except FileNotFoundError:
+                sys.exit(
+                    f"\n⚠️  FileNotFoundError Exception:  {self.args.file} is not found"
+                )
 
         # Create output directory if it doesn't exist
         if not os.path.exists(self.args.output):
