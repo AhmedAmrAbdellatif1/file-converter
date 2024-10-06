@@ -34,6 +34,12 @@ def main() -> None:
                 pdfs=parser.files,
                 output_dir=parser.output,
             )
+        
+        case "splitPDF":
+            split_pdf(
+                pdfs=parser.files,
+                output_dir=parser.output,
+            )
 
         case "compressPDF":
             compress_pdf(

@@ -34,7 +34,7 @@ class Parser:
             "-o",
             "--output",
             metavar="directory",
-            help="Directory where the converted JPEG images will be saved (default: current working directory)",
+            help="Directory where the converted JPEG images will be saved (default: %(default)s)",
             type=str,
             default=os.getcwd(),
         )
@@ -89,7 +89,7 @@ class Parser:
             "-o",
             "--output",
             metavar="directory",
-            help="Directory where the generated PDF will be saved (default: current working directory)",
+            help="Directory where the generated PDF will be saved (default: %(default)s)",
             type=str,
             default=os.getcwd(),
         )
@@ -125,7 +125,7 @@ class Parser:
             "-o",
             "--output",
             metavar="directory",
-            help="Directory where the generated merged PDF will be saved (default: current working directory)",
+            help="Directory where the generated merged PDF will be saved (default: %(default)s)",
             type=str,
             default=os.getcwd(),  # Default to the current working directory if not provided
         )
@@ -149,7 +149,30 @@ class Parser:
             "-o",
             "--output",
             metavar="directory",
-            help="Directory where the compressed PDF will be saved (default: current working directory)",
+            help="Directory where the compressed PDF will be saved (default: %(default)s)",
+            type=str,
+            default=os.getcwd(),
+        )
+        # Parser for splitPDF conversion
+        self.parser_splitPDF = self.subparsers.add_parser(
+            name="splitPDF",
+            help="Splits a PDF file into separate single-page PDF files",
+        )
+        # Argument for input PDF file
+        self.parser_splitPDF.add_argument(
+            "-f",
+            "--file",
+            metavar="filename",
+            help="The path to the input PDF file to be split.",
+            type=str,
+            required=True,
+        )
+        # Argument for output directory (optional, default: current directory)
+        self.parser_splitPDF.add_argument(
+            "-o",
+            "--output",
+            metavar="directory",
+            help="The directory where the individual page PDFs will be saved. (default: %(default)s)",
             type=str,
             default=os.getcwd(),
         )
@@ -237,7 +260,21 @@ class Parser:
                     raise FileNotFoundError
                 self.file = self.args.file
                 self.type = "compressPDF"
-
+                
+            except FileNotFoundError:
+                sys.exit(
+                    f"\n⚠️  FileNotFoundError Exception:  {self.args.file} is not found"
+                )
+        
+        elif self.args.converter == "splitPDF":
+            try:
+                if not os.path.isfile(self.args.file) or not self.args.file.endswith(
+                    ".pdf"
+                ):
+                    raise FileNotFoundError
+                self.file = self.args.file
+                self.type = "splitPDF"
+                
             except FileNotFoundError:
                 sys.exit(
                     f"\n⚠️  FileNotFoundError Exception:  {self.args.file} is not found"

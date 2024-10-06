@@ -10,7 +10,7 @@ from PIL import Image
 
 # PDF to JPEG Converter
 def pdf_to_jpg(
-    pdf_file: str,
+    pdf: str,
     output_dir: str,
     first_page=None,
     last_page=None,
@@ -20,14 +20,14 @@ def pdf_to_jpg(
     Converts a PDF file to a series of JPEG images.
 
     Parameters:
-    - pdf_file: Path to the PDF file.
+    - pdf: Path to the PDF file.
     - output_dir: Directory where the JPEG images will be saved.
     - first_page: (Optional) First page to convert.
     - last_page: (Optional) Last page to convert.
     - dpi: Resolution of the output JPEG images (default: 300 DPI).
     """
     # Count pages before conversion
-    with open(pdf_file, "rb") as pdf:
+    with open(pdf, "rb") as pdf:
         pdf_reader = PyPDF2.PdfReader(pdf)
         num_pages = len(pdf_reader.pages)
 
@@ -36,7 +36,7 @@ def pdf_to_jpg(
         if num_pages > 100:
             print("\nℹ️  the PDF file exceeds 100 pages")
             images = convert_from_path(
-                pdf_file,
+                pdf,
                 dpi=dpi,
                 first_page=first_page,
                 last_page=last_page,
@@ -45,7 +45,7 @@ def pdf_to_jpg(
             )
         else:
             images = convert_from_path(
-                pdf_file,
+                pdf,
                 dpi=dpi,
                 first_page=first_page,
                 last_page=last_page,
@@ -59,7 +59,7 @@ def pdf_to_jpg(
 
     except:
         sys.exit(
-            f"\n⚠️  Couldn't open file {pdf_file}: Change the arabic name in the parsed path"
+            f"\n⚠️  Couldn't open file {pdf}: Change the arabic name in the parsed path"
         )
 
     # Print completion message
@@ -94,8 +94,7 @@ def jpg_to_pdf(images: list, output_dir: str) -> None:
     pdf = FPDF()
 
     # Add each JPEG as a new page in the PDF
-    total_steps = len(images)  # Define the total steps for the loading bar
-    with tqdm(total=total_steps, desc="Processing", unit="step") as pbar:
+    with tqdm(total=len(images), desc="Processing", unit="step") as pbar:
         for image in images:
             with Image.open(image) as im:
                 width, height = im.size
@@ -123,8 +122,7 @@ def merge_pdfs(pdfs: list, output_dir: str) -> None:
     merger = PyPDF2.PdfMerger()
 
     # Append each PDF to the merger
-    total_steps = len(pdfs)  # Define the total steps for the loading bar
-    with tqdm(total=total_steps, desc="Processing", unit="step") as pbar:
+    with tqdm(total=len(pdfs), desc="Processing", unit="step") as pbar:
         for pdf in pdfs:
             merger.append(pdf)
             pbar.update(1)  # Update the progress bar by 1 step
@@ -136,7 +134,52 @@ def merge_pdfs(pdfs: list, output_dir: str) -> None:
     # Print completion message
     print(f"\n✅  PDF Saved in {output_path}")
 
+  
+def split_pdf(pdf: str, output_dir: str) -> None:
+    """
+    Splits a PDF file into separate single-page PDF files, each saved in the specified output directory.
+    
+    Args:
+        pdf (str): The path to the input PDF file to be split.
+        output_dir (str): The directory where the individual page PDFs will be saved.
+    
+    Returns:
+        None: This function does not return any value. It writes individual page PDFs to the output directory.
+    
+    The function opens the input PDF, reads each page, and saves each one as a separate PDF file. 
+    A progress bar is displayed using `tqdm` to show the progress of the splitting process.
+    """
 
+    # Open the original PDF in read-binary mode
+    with open(pdf, "rb") as pdf:
+        # Create a PdfReader object to read the PDF file
+        pdf_reader = PyPDF2.PdfReader(pdf)
+        num_pages = len(pdf_reader.pages)  # Get the total number of pages in the PDF
+
+        # Display a progress bar using tqdm with the total number of pages
+        with tqdm(total=num_pages, desc="Processing", unit="step") as pbar:
+            # Iterate through all the pages of the PDF
+            for page_number in range(num_pages):
+                # Create a PdfWriter object for creating a new single-page PDF
+                pdf_writer = PyPDF2.PdfWriter()
+
+                # Add the current page to the PdfWriter object
+                pdf_writer.add_page(pdf_reader.pages[page_number])
+
+                # Define the output path for the new single-page PDF
+                output_pdf_path = f"{output_dir}/page_{page_number + 1}.pdf"
+
+                # Write the single-page PDF to the output directory
+                with open(output_pdf_path, "wb") as output_pdf_file:
+                    pdf_writer.write(output_pdf_file)
+
+                # Update the progress bar by one step after processing each page
+                pbar.update(1)  
+
+    # Inform the user that the process is complete
+    print(f"\n✅  Splitting PDFs saved in {output_dir}")
+    
+    
 def compress_pdf(pdf: str, output_dir: str) -> None:
     """
     Compresses the content streams of a PDF file to reduce its size.
@@ -156,8 +199,7 @@ def compress_pdf(pdf: str, output_dir: str) -> None:
     writer = PyPDF2.PdfWriter()
 
     # Compress each page's content streams and add it to the writer
-    total_steps = len(reader.pages)  # Define the total steps for the loading bar
-    with tqdm(total=total_steps, desc="Processing", unit="step") as pbar:
+    with tqdm(total=len(reader.pages), desc="Processing", unit="step") as pbar:
         for page in reader.pages:
             page.compress_content_streams()  # Compress the content streams of the page
             writer.add_page(page)  # Add the compressed page to the writer
@@ -170,3 +212,5 @@ def compress_pdf(pdf: str, output_dir: str) -> None:
 
     # Print completion message
     print(f"\n✅  Compressed PDF saved in {output_dir}")
+    
+  
