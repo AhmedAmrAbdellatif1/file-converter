@@ -1,7 +1,3 @@
-Certainly! Here is the revised `README.md` content, without using triple backticks to terminate code blocks prematurely.
-
----
-
 # PDF and Image Converter
 
 This repository provides a set of Python scripts for performing various operations on PDFs and images. It includes functionality for converting PDFs to images, merging and splitting PDFs, converting images back to PDFs, and compressing PDF files.
